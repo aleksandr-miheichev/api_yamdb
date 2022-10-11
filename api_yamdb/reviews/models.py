@@ -141,7 +141,7 @@ class Review(models.Model):
     )
 
     class Meta:
-        constants = [
+        constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
                 name='unique_review'
