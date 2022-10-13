@@ -1,38 +1,53 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
-from .managers import CustomUserManager
+from reviews.managers import CustomUserManager
 from reviews.validators import validate_year
 
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
-        ('anonimus', 'anonimus'),
-        ('user', 'user'),
-        ('moderator', 'moderator'),
         ('admin', 'admin'),
-        ('superuser', 'superuser'),
+        ('moderator', 'moderator'),
+        ('user', 'user'),
     ]
-    username = models.CharField(max_length=200, unique=True)
-    first_name = models.CharField(max_length=200, null=True)
-    second_name = models.CharField(max_length=200, null=True)
-    email = models.EmailField(_('email address'), unique=True)
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        verbose_name='Логин пользователя'
+    )
+    first_name = models.CharField(
+        max_length=150,
+        null=True,
+        verbose_name='Имя пользователя'
+    )
+    last_name = models.CharField(
+        max_length=150,
+        null=True,
+        verbose_name='Фамилия пользователя'
+    )
+    email = models.EmailField(
+        _('email address'),
+        unique=True,
+        verbose_name='Адрес электронной почты'
+    )
     conformation_code = models.BigIntegerField(null=True)
     role = models.CharField(
-        max_length=200,
         choices=ROLE_CHOICES,
         default='user',
+        verbose_name='Роль пользователя'
     )
-    bio = models.CharField(max_length=200, null=True)
+    bio = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Биография пользователя'
+    )
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
     objects = CustomUserManager()
-
-    def __str__(self):
-        return self.username
 
     class Meta:
         constraints = [
@@ -41,6 +56,12 @@ class CustomUser(AbstractUser):
                 fields=['email', 'username'],
             ),
         ]
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username[:15]
+
 
 User = CustomUser
 
