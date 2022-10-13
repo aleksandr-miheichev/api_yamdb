@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import CustomUser
+from reviews.models import (Category, Comment, CustomUser, Genre, GenreTitle,
+                            Review, Title, User)
 
 
 class CustomUserAdmin(UserAdmin):
@@ -25,4 +26,11 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
 
 
+admin.site.register(Category)
+admin.site.register(Comment)
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Genre)
+admin.site.register(GenreTitle)
+admin.site.register(Review)
+admin.site.register(Title)
+admin.site.register(User)
