@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 
-from .models import CustomUser
+from reviews.models import CustomUser
 
 
 class UsersSerializer(serializers.ModelSerializer):
@@ -14,10 +14,10 @@ class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ('username',
-            'first_name',
-            'second_name',
-            'email',
-            'conformation_code',
-            'role',
-            'bio',
-        )
+                  'first_name',
+                  'last_name',
+                  'email',
+                  'conformation_code',
+                  'role',
+                  'bio',
+                  )
