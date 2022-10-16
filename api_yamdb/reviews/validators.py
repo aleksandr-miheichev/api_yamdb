@@ -9,3 +9,10 @@ def validate_year(value):
              'текущего!'),
             params={'value': value},
         )
+
+
+def validate_username(data):
+    if data == 'me':
+        raise ValidationError(
+            'Имя "me" не использовать!')
+    return data
