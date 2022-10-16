@@ -11,18 +11,23 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
 
+from api.filters import TitleFilter
 from api.mixins import CreateDestroyListViewSet
-from api.permissions import IsStaffOrReadOnly, IsAdminOnly
+from api.permissions import IsAdminOnly, IsStaffOrReadOnly
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
     GetTitleSerializer,
     TitleSerializer
 )
-from reviews.models import Category, CustomUser, Genre, Title
-from reviews.serializers import SignUpSerializer, TokenSerializer
-from reviews.serializers import AdminSerializer, MeSerialize
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
+from reviews.models import Category, CustomUser, Genre, Title
+from reviews.serializers import (
+    AdminSerializer,
+    MeSerializer,
+    SignUpSerializer,
+    TokenSerializer
+)
 
 
 def generate_code():
@@ -151,7 +156,8 @@ class CategoryViewSet(CreateDestroyListViewSet):
     serializer_class = CategorySerializer
     permission_classes = (IsStaffOrReadOnly,)
     filter_backends = (SearchFilter,)
-    search_fields = ("name",)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class GenreViewSet(CreateDestroyListViewSet):
@@ -159,17 +165,17 @@ class GenreViewSet(CreateDestroyListViewSet):
     serializer_class = GenreSerializer
     permission_classes = (IsStaffOrReadOnly,)
     filter_backends = (SearchFilter,)
-    search_fields = ("name",)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg('review__score'))
-    serializer_class = GetTitleSerializer
+    queryset = Title.objects.all().annotate(score=Avg('reviews__score'))
     permission_classes = (IsStaffOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'category__slug', 'genre__slug', 'year')
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
-        if self.action in ("retrieve", "list"):
+        if self.action in ('retrieve', 'list'):
             return GetTitleSerializer
         return TitleSerializer

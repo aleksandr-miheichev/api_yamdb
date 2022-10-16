@@ -13,6 +13,5 @@ def validate_year(value):
 
 def validate_username(data):
     if data == 'me':
-        raise ValidationError(
-            'Имя "me" не использовать!')
+        raise ValidationError('Имя "me" не использовать!')
     return data
