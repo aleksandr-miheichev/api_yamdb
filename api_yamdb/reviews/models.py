@@ -1,10 +1,10 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import EmailValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from reviews.managers import CustomUserManager
-from reviews.validators import validate_year
+from reviews.validators import validate_year, validate_username
 
 
 class CustomUser(AbstractUser):
@@ -16,7 +16,8 @@ class CustomUser(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
-        verbose_name='Логин пользователя'
+        verbose_name='Логин пользователя',
+        validators=[validate_username]
     )
     first_name = models.CharField(
         max_length=150,
@@ -31,10 +32,11 @@ class CustomUser(AbstractUser):
     email = models.EmailField(
         _('email address'),
         unique=True,
-        verbose_name='Адрес электронной почты'
+        validators=[EmailValidator]
     )
-    conformation_code = models.BigIntegerField(null=True)
+    confirmation_code = models.BigIntegerField(null=True)
     role = models.CharField(
+        max_length=150,
         choices=ROLE_CHOICES,
         default='user',
         verbose_name='Роль пользователя'
@@ -47,8 +49,6 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
-    objects = CustomUserManager()
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -58,9 +58,15 @@ class CustomUser(AbstractUser):
         ]
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ('-username',)
 
     def __str__(self):
         return self.username[:15]
+
+    def save(self, *args, **kwargs):
+        if self.is_superuser:
+            self.role = 'admin'
+        return super().save(*args, **kwargs)
 
 
 User = CustomUser
