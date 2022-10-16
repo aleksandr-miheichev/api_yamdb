@@ -1,23 +1,48 @@
 from rest_framework import serializers
-from rest_framework.relations import SlugRelatedField
 
-from reviews.models import CustomUser
+from .models import CustomUser
 
 
-class UsersSerializer(serializers.ModelSerializer):
-    username = SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault(),
-    )
-
+class SignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ('username',
-                  'first_name',
-                  'last_name',
-                  'email',
-                  'conformation_code',
-                  'role',
-                  'bio',
-                  )
+        fields = (
+            'username',
+            'email',
+        )
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'confirmation_code',
+        )
+
+
+class MeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'bio',
+            'role',
+        )
+        read_only_fields = ('role',)
+
+
+class AdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'bio',
+            'role',
+        )
