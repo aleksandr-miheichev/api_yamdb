@@ -1,16 +1,18 @@
 from random import randint, seed
 
+from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets
-from rest_framework.decorators import api_view
+from rest_framework import status, viewsets, mixins
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import AllowAny
 
 from api.mixins import CreateDestroyListViewSet
-from api.permissions import IsStaffOrReadOnly
+from api.permissions import IsStaffOrReadOnly, IsAdminOnly
 from api.serializers import (
     CategorySerializer,
     GenreSerializer,
@@ -18,7 +20,9 @@ from api.serializers import (
     TitleSerializer
 )
 from reviews.models import Category, CustomUser, Genre, Title
-from reviews.serializers import UsersSerializer
+from reviews.serializers import SignUpSerializer, TokenSerializer
+from reviews.serializers import AdminSerializer, MeSerialize
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 
 def generate_code():
@@ -28,44 +32,118 @@ def generate_code():
 
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
+    return {"token": str(refresh.access_token)}
 
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+
+def send_mail_code(code, email):
+    send_mail(
+        'confirmation_code',
+        f'Here is confirmation_code {code}',
+        DEFAULT_FROM_EMAIL,
+        [email],
+        fail_silently=False,
+    )
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def api_signup(request):
+    code = generate_code()
+    serializer = SignUpSerializer(data=request.data)
+    if serializer.is_valid():
+        user, created = CustomUser.objects.get_or_create(
+            username=serializer.validated_data['username'],
+            email=serializer.validated_data['email'],
+        )
+        user.set_password(code)
+        user.save()
+        send_mail_code(code, user.email)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(
+        serializer.errors, status=status.HTTP_400_BAD_REQUEST
+    )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def api_token(request):
+    serializer = TokenSerializer(data=request.data)
+    if serializer.is_valid():
+        user = get_object_or_404(
+            CustomUser,
+            username=serializer.validated_data['username'],
+            password=serializer.validated_data['confirmation_code'],
+        )
+        return Response(
+            get_tokens_for_user(user),
+            status=status.HTTP_200_OK
+        )
+    return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class AdminViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = CustomUser.objects.all()
+    serializer_class = AdminSerializer
+    permission_classes = [IsAdminOnly]
+    filter_backends = [SearchFilter]
+    search_fields = ('=username',)
+
+
+@api_view(['POST', 'GET'])
+@permission_classes([IsAdminOnly])
+def api_admin_signup(request):
     if request.method == 'POST':
-        code = generate_code()
-        data = request.data
-        data['conformation_code'] = code
-        serializer = UsersSerializer(data=data)
+        serializer = AdminSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            send_mail(
-                'conformation_code',
-                f'Here is the confirmation code {code}',
-                'from@example.com',
-                [request.data['email']],
-                fail_silently=False,
-            )
-            return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-def api_token(request):
-    if (
-            request.method == 'POST' and CustomUser.objects.filter(
-                username=request.username,
-                conformation_code=request.conformation_code
-            )):
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(
-            get_tokens_for_user(request.username), status=status.HTTP_200_OK
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
         )
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+    users = CustomUser.objects.all()
+    serializer = AdminSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH', 'GET'])
+def api_me(request):
+    user = get_object_or_404(CustomUser, username=request.user.username)
+    if request.method == 'PATCH':
+        serializer = MeSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    serializer = MeSerializer(user, many=False)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH', 'GET', 'DELETE'])
+@permission_classes([IsAdminOnly])
+def api_users(request, username):
+    user = get_object_or_404(CustomUser, username=username)
+    if request.method == 'PATCH':
+        serializer = AdminSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        CustomUser.objects.filter(username=username).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    serializer = AdminSerializer(user)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CategoryViewSet(CreateDestroyListViewSet):
