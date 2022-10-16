@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from reviews.models import (Category, Comment, CustomUser, Genre, GenreTitle,
-                            Review, Title, User)
+                            Review, Title)
 
 
 class CustomUserAdmin(UserAdmin):
@@ -33,4 +33,3 @@ admin.site.register(Genre)
 admin.site.register(GenreTitle)
 admin.site.register(Review)
 admin.site.register(Title)
-admin.site.register(User)
