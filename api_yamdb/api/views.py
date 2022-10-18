@@ -1,35 +1,27 @@
 from random import randint, seed
 
-from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, mixins
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import AllowAny
 
 from api.filters import TitleFilter
 from api.mixins import CreateDestroyListViewSet
-from api.permissions import IsAdminOnly, IsStaffOrReadOnly, IfAdminModeratorAuthorPermission
-from api.serializers import (
-    CategorySerializer,
-    GenreSerializer,
-    GetTitleSerializer,
-    TitleSerializer,
-    ReviewSerializer,
-    CommentSerializer
-)
+from api.permissions import (IfAdminModeratorAuthorPermission, IsAdminOnly,
+                             IsStaffOrReadOnly)
+from api.serializers import (CategorySerializer, CommentSerializer,
+                             GenreSerializer, GetTitleSerializer,
+                             ReviewSerializer, TitleSerializer)
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
-from reviews.models import Category, CustomUser, Genre, Title, Comment, Review
-from reviews.serializers import (
-    AdminSerializer,
-    MeSerializer,
-    SignUpSerializer,
-    TokenSerializer
-)
+from reviews.models import Category, CustomUser, Genre, Review, Title
+from reviews.serializers import (AdminSerializer, MeSerializer,
+                                 SignUpSerializer, TokenSerializer)
 
 
 def generate_code():
@@ -86,9 +78,9 @@ def api_token(request):
             status=status.HTTP_200_OK
         )
     return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        serializer.errors,
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 class AdminViewSet(
@@ -187,31 +179,25 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (IfAdminModeratorAuthorPermission,)
 
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
     def get_queryset(self):
-        review = get_object_or_404(
-            Title,
-            pk=self.kwargs.get('title_id'))
-        return review.reviews.all()
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
-        title = get_object_or_404(
-            Title,
-            pk=self.kwargs.get('title_id'))
-        serializer.save(author=self.request.user, title=title)
+        serializer.save(author=self.request.user, title=self.get_title())
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (IfAdminModeratorAuthorPermission,)
 
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+
     def get_queryset(self):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id'))
-        return review.comments.all()
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review,
-            pk=self.kwargs.get('review_id'))
-        serializer.save(author=self.request.user, review=review)
+        serializer.save(author=self.request.user, review=self.get_review())
