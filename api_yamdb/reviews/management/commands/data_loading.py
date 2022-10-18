@@ -23,13 +23,14 @@ class Command(BaseCommand):
         for model, csv_file in TABLES.items():
             file_path = f'./static/data/{csv_file}'
             try:
-                with open(file_path, 'r', encoding='utf-8') as f:
+                f = open(file_path, 'r', encoding='utf-8')
+            except FileNotFoundError:
+                print(f'Sorry, the file "{csv_file}" does not exist.')
+            else:
+                with f:
                     reader = csv.DictReader(f, delimiter=',')
                     for data in reader:
                         model.objects.get_or_create(**data)
-                        self.stdout.write(
-                            self.style.SUCCESS('Database successfully loaded '
-                                               'into models!')
-                        )
-            except FileNotFoundError:
-                print(f'Sorry, the file "{csv_file}" does not exist.')
+        self.stdout.write(
+            self.style.SUCCESS('Database successfully loaded into models!')
+        )
