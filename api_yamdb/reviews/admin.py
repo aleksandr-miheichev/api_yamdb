@@ -5,6 +5,7 @@ from reviews.models import (Category, Comment, CustomUser, Genre, GenreTitle,
                             Review, Title)
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "slug")
     prepopulated_fields = {'slug': ('name',)}
@@ -31,25 +32,24 @@ class CustomUserAdmin(UserAdmin):
     ordering = ('email',)
 
 
+@admin.register(Genre)
 class GenreAdmin(CategoryAdmin):
     list_display = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
 
 
+@admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('name', 'year', 'description', 'category')
     list_filter = ('year', 'genre', 'category', 'name')
     search_fields = ('name',)
 
 
+@admin.register(GenreTitle)
 class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ('id', 'genre_id', 'title_id')
 
 
-admin.site.register(Category, CategoryAdmin)
 admin.site.register(Comment)
 admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Genre, GenreAdmin)
-admin.site.register(GenreTitle, GenreTitleAdmin)
 admin.site.register(Review)
-admin.site.register(Title, TitleAdmin)

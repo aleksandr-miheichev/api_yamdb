@@ -7,6 +7,23 @@ from django.utils.translation import gettext_lazy as _
 from reviews.validators import validate_year, validate_username
 
 
+class CreatedModel(models.Model):
+    """Абстрактная модель для моделей Категория и Жанр."""
+
+    name = models.CharField(
+        max_length=256,
+        verbose_name='Наименование'
+    )
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        verbose_name='Короткая метка'
+    )
+
+    def __str__(self):
+        return self.name[:15]
+
+
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('admin', 'admin'),
@@ -72,77 +89,53 @@ class CustomUser(AbstractUser):
 User = CustomUser
 
 
-class Category(models.Model):
-    name = models.CharField(
-        max_length=256,
-        verbose_name='Наименование категории'
-    )
-    slug = models.SlugField(
-        max_length=50,
-        unique=True,
-        verbose_name='Короткая метка категории'
-    )
+class Category(CreatedModel):
 
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
-    def __str__(self):
-        return self.name[:15]
 
-
-class Genre(models.Model):
-    name = models.CharField(
-        max_length=256,
-        verbose_name='Наименование жанра'
-    )
-    slug = models.SlugField(
-        max_length=50,
-        unique=True,
-        verbose_name='Короткая метка жанра'
-    )
+class Genre(CreatedModel):
 
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
-    def __str__(self):
-        return self.name[:15]
-
 
 class Title(models.Model):
-    name = models.CharField(
-        max_length=200,
-        verbose_name='Название произведения'
+    name = models.TextField(
+        verbose_name='Название'
     )
     year = models.IntegerField(
         validators=[validate_year],
-        verbose_name='Дата выхода произведения'
+        verbose_name='Дата выхода'
     )
     description = models.TextField(
         null=True,
         blank=True,
-        verbose_name='Описание произведения'
+        verbose_name='Описание'
     )
     genre = models.ManyToManyField(
         Genre,
-        verbose_name='Жанр произведения',
+        verbose_name='Жанр',
         through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
-        verbose_name='Категория произведения',
+        verbose_name='Категория',
         related_name='titles',
     )
     rating = models.IntegerField(
         null=True,
         default=None,
-        verbose_name='Рейтинг произведения'
+        verbose_name='Рейтинг'
     )
 
     class Meta:
+        ordering = ('name',)
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
 

@@ -15,6 +15,11 @@ TABLES = {
     Comment: 'comments.csv',
 }
 
+replace_field = [
+    'author',
+    'category',
+]
+
 
 class Command(BaseCommand):
     help = "Loads data from csv files"
@@ -29,6 +34,9 @@ class Command(BaseCommand):
             else:
                 with f:
                     reader = csv.DictReader(f, delimiter=',')
+                    for index, field in enumerate(reader.fieldnames):
+                        if field in replace_field:
+                            reader.fieldnames[index] += '_id'
                     for data in reader:
                         model.objects.get_or_create(**data)
         self.stdout.write(
