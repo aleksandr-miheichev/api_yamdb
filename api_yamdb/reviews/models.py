@@ -20,6 +20,9 @@ class CreatedModel(models.Model):
         verbose_name='Короткая метка'
     )
 
+    class Meta:
+        abstract = True
+
     def __str__(self):
         return self.name[:15]
 
@@ -90,14 +93,12 @@ User = CustomUser
 
 
 class Category(CreatedModel):
-
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
 class Genre(CreatedModel):
-
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -200,7 +201,8 @@ class Review(CommonInfo):
             MinValueValidator(1),
             MaxValueValidator(10)
         ),
-        error_messages={'invalid': 'Please rate from 1 to 10'}
+        error_messages={'invalid': 'Please rate from 1 to 10'},
+        verbose_name='Оценка'
     )
 
     class Meta(CommonInfo.Meta):
