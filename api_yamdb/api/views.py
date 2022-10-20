@@ -6,13 +6,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.filters import SearchFilter
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
-from api.mixins import CreateDestroyListViewSet
 from api.permissions import (IfAdminModeratorAuthorPermission, IsAdminOnly,
                              IsStaffOrReadOnly)
 from api.serializers import (CategorySerializer, CommentSerializer,
@@ -145,29 +144,37 @@ def api_users(request, username):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryViewSet(CreateDestroyListViewSet):
+class AbstractViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    """Абстрактный вьюсет для вьюсетов Категория и Жанр."""
+    permission_classes = (IsStaffOrReadOnly,)
+    filter_backends = (SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+
+
+class CategoryViewSet(AbstractViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsStaffOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
-class GenreViewSet(CreateDestroyListViewSet):
+class GenreViewSet(AbstractViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsStaffOrReadOnly,)
-    filter_backends = (SearchFilter,)
-    search_fields = ('name',)
-    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(score=Avg('reviews__score'))
     permission_classes = (IsStaffOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend, OrderingFilter,)
     filterset_class = TitleFilter
+    ordering_fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+                       'category', 'score')
+    ordering = ('name',)
 
     def get_serializer_class(self):
         if self.action in ('retrieve', 'list'):

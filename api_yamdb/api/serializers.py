@@ -23,7 +23,9 @@ class GetTitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
+                  'category')
+        read_only_fields = ('__all__',)
 
     def get_rating(self, obj):
         return obj.score
@@ -42,7 +44,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        exclude = ('rating',)
+        fields = ('id', 'name', 'year', 'description', 'genre', 'category')
 
 
 class ReviewSerializer(serializers.ModelSerializer):

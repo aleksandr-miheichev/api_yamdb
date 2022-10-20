@@ -6,6 +6,10 @@ from django.utils.translation import gettext_lazy as _
 
 from reviews.validators import validate_year, validate_username
 
+ADMIN = 'admin'
+MODERATOR = 'moderator'
+USER = 'user'
+
 
 class CreatedModel(models.Model):
     """Абстрактная модель для моделей Категория и Жанр."""
@@ -28,10 +32,13 @@ class CreatedModel(models.Model):
 
 
 class CustomUser(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
     ROLE_CHOICES = [
-        ('admin', 'admin'),
-        ('moderator', 'moderator'),
-        ('user', 'user'),
+        (ADMIN, 'admin'),
+        (MODERATOR, 'moderator'),
+        (USER, 'user'),
     ]
     username = models.CharField(
         max_length=150,
