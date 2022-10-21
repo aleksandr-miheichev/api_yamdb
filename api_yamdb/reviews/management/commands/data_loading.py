@@ -28,7 +28,7 @@ class Command(BaseCommand):
         for model, csv_file in TABLES.items():
             file_path = f'./static/data/{csv_file}'
             try:
-                f = open(file_path, 'r', encoding='utf-8')
+                f = open(file_path, 'r', encoding='utf8')
             except FileNotFoundError:
                 print(f'Sorry, the file "{csv_file}" does not exist.')
             else:

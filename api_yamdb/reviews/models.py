@@ -136,11 +136,6 @@ class Title(models.Model):
         verbose_name='Категория',
         related_name='titles',
     )
-    rating = models.IntegerField(
-        null=True,
-        default=None,
-        verbose_name='Рейтинг'
-    )
 
     class Meta:
         ordering = ('name',)
