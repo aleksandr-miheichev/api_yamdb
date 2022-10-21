@@ -173,7 +173,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend, OrderingFilter,)
     filterset_class = TitleFilter
     ordering_fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
-                       'category', 'score')
+                       'category')
     ordering = ('name',)
 
     def get_serializer_class(self):
