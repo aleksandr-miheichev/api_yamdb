@@ -1,24 +1,19 @@
 from rest_framework import permissions
 
-from reviews.models import CustomUser
-
 
 class IsStaffOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
             or (request.user.is_authenticated
-                and request.user.role == CustomUser.ADMIN)
+                    and request.user.is_admin)
         )
 
 
 class IsAdminOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
-            and request.user.role == CustomUser.ADMIN
-            or request.user.is_superuser
-        )
+        return (request.user.is_authenticated
+                and request.user.is_admin)
 
 
 class IfAdminModeratorAuthorPermission(permissions.BasePermission):
@@ -32,6 +27,6 @@ class IfAdminModeratorAuthorPermission(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or obj.author == request.user
-            or request.user.role == CustomUser.MODERATOR
-            or request.user.role == CustomUser.ADMIN
+            or request.user.is_moderator
+            or request.user.is_admin
         )
