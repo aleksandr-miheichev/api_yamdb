@@ -2,7 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import EmailValidator
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
 from reviews.validators import validate_year, validate_username
 
