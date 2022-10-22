@@ -89,14 +89,14 @@ class CustomUser(AbstractUser):
         return self.username[:15]
 
     @property
-    def is_admin(self, *args, **kwargs):
-        if self.is_superuser or self.role == self.ADMIN:
+    def is_admin(self):
+        if self.is_superuser or self.role == ADMIN:
             return True
         return False
 
     @property
-    def is_moderator(self, *args, **kwargs):
-        if self.role == self.MODERATOR:
+    def is_moderator(self):
+        if self.role == MODERATOR:
             return True
         return False
 
