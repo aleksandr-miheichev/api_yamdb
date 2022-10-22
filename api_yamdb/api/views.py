@@ -1,13 +1,13 @@
 from random import randint, seed
 
-from django.db import IntegrityError
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
-from rest_framework.decorators import api_view, permission_classes, action
-from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -17,9 +17,8 @@ from api.permissions import (IfAdminModeratorAuthorPermission, IsAdminOnly,
                              IsStaffOrReadOnly)
 from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, GetTitleSerializer,
-                             ReviewSerializer, TitleSerializer,
-                             UsersSerializer,
-                             SignUpSerializer, TokenSerializer)
+                             ReviewSerializer, SignUpSerializer,
+                             TitleSerializer, TokenSerializer, UsersSerializer)
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from reviews.models import Category, CustomUser, Genre, Review, Title
 
@@ -49,8 +48,8 @@ def send_mail_code(code, email):
 def api_signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    username=serializer.validated_data['username']
-    email=serializer.validated_data['email']
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
     try:
         user, created = CustomUser.objects.get_or_create(
             username=username,
@@ -59,7 +58,7 @@ def api_signup(request):
     except IntegrityError:
         return Response(status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
-    user.confirmation_code=code
+    user.confirmation_code = code
     user.save()
     send_mail_code(code, user.email)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -94,7 +93,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         methods=['get', 'patch'],
         permission_classes=[IsAuthenticated]
     )
-    def me(self, request, *args, **kwargs):
+    def me(self, request):
         if request.method == 'GET':
             return Response(
                 self.get_serializer(request.user).data,

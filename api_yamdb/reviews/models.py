@@ -3,7 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import EmailValidator
 from django.db import models
 
-from reviews.validators import validate_year, validate_username
+from reviews.validators import validate_username, validate_year
 
 ADMIN = 'admin'
 MODERATOR = 'moderator'

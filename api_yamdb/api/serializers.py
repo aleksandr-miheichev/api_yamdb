@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.shortcuts import get_object_or_404
 
-from reviews.models import Category, Comment, Genre, Review, Title, CustomUser
+from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -103,8 +103,9 @@ class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()),]
+        validators=[UniqueValidator(queryset=CustomUser.objects.all()), ]
     )
+
     class Meta:
         model = CustomUser
         fields = (
