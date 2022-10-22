@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.views import (api_me, api_signup, api_token, api_users, AdminViewSet,
+from api.views import (api_signup, api_token, UsersViewSet,
                        CategoryViewSet, CommentViewSet, GenreViewSet,
                        ReviewViewSet, TitleViewSet)
 
@@ -20,16 +20,11 @@ router_v1.register(
     CommentViewSet,
     basename='Comments'
 )
-
-users_urlpatterns = [
-    path(
-        '',
-        AdminViewSet.as_view({'get': 'list', 'post': 'create'}),
-        name='admin_signup'
-    ),
-    path('me/', api_me, name='me'),
-    path('<str:username>/', api_users, name='users'),
-]
+router_v1.register(
+    r'users',
+    UsersViewSet,
+    basename='admin'
+)
 
 auth_urlpatterns = [
     path('signup/', api_signup, name='signup'),
@@ -39,7 +34,6 @@ auth_urlpatterns = [
 v_urlpatterns = [
     path('', include(router_v1.urls)),
     path('auth/', include(auth_urlpatterns)),
-    path('users/', include(users_urlpatterns)),
 ]
 
 urlpatterns = [
