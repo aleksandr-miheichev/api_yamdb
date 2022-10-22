@@ -32,9 +32,6 @@ class CreatedModel(models.Model):
 
 
 class CustomUser(AbstractUser):
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
     ROLE_CHOICES = [
         (ADMIN, 'admin'),
         (MODERATOR, 'moderator'),
@@ -44,28 +41,30 @@ class CustomUser(AbstractUser):
         max_length=150,
         unique=True,
         verbose_name='Логин пользователя',
-        validators=[validate_username]
+        validators=[validate_username],
     )
     first_name = models.CharField(
         max_length=150,
         null=True,
+        blank=True,
         verbose_name='Имя пользователя'
     )
     last_name = models.CharField(
         max_length=150,
         null=True,
+        blank=True,
         verbose_name='Фамилия пользователя'
     )
     email = models.EmailField(
-        _('email address'),
+        max_length=254,
         unique=True,
         validators=[EmailValidator]
     )
-    confirmation_code = models.BigIntegerField(null=True)
+    confirmation_code = models.BigIntegerField(null=True, blank=True,)
     role = models.CharField(
-        max_length=150,
+        max_length=9,
         choices=ROLE_CHOICES,
-        default='user',
+        default=USER,
         verbose_name='Роль пользователя'
     )
     bio = models.TextField(
@@ -85,18 +84,22 @@ class CustomUser(AbstractUser):
         ]
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('-username',)
+        ordering = ('username',)
 
     def __str__(self):
         return self.username[:15]
 
-    def save(self, *args, **kwargs):
-        if self.is_superuser:
-            self.role = 'admin'
-        return super().save(*args, **kwargs)
+    @property
+    def is_admin(self, *args, **kwargs):
+        if self.is_superuser or self.role == self.ADMIN:
+            return True
+        return False
 
-
-User = CustomUser
+    @property
+    def is_moderator(self, *args, **kwargs):
+        if self.role == self.MODERATOR:
+            return True
+        return False
 
 
 class Category(CreatedModel):
@@ -171,7 +174,7 @@ class CommonInfo(models.Model):
         verbose_name='Текст',
     )
     author = models.ForeignKey(
-        User,
+        CustomUser,
         on_delete=models.CASCADE,
         related_name='%(app_label)s_%(class)s',
         verbose_name='Автор',
