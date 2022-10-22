@@ -1,7 +1,6 @@
 from random import randint, seed
 
 from django.core.mail import send_mail
-from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -60,7 +59,7 @@ def api_signup(request):
         email=email,
     )
     code = generate_code()
-    user.confirmation_code=code
+    user.confirmation_code = code
     user.save()
     send_mail_code(code, user.email)
     return Response(serializer.data, status=status.HTTP_200_OK)
