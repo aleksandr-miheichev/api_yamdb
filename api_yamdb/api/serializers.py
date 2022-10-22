@@ -1,7 +1,8 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 from django.shortcuts import get_object_or_404
 
-from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.models import Category, Comment, Genre, Review, Title, CustomUser
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -78,3 +79,40 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = ('id', 'text', 'author', 'pub_date')
         model = Comment
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+        )
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'confirmation_code',
+        )
+
+
+class UsersSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[UniqueValidator(queryset=CustomUser.objects.all()),]
+    )
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'bio',
+            'role',
+        )
+        lookup_field = 'username'
