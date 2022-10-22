@@ -10,6 +10,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
@@ -47,18 +48,19 @@ def send_mail_code(code, email):
 @permission_classes([AllowAny])
 def api_signup(request):
     serializer = SignUpSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    username = serializer.validated_data['username']
-    email = serializer.validated_data['email']
     try:
-        user, created = CustomUser.objects.get_or_create(
-            username=username,
-            email=email,
-        )
-    except IntegrityError:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
+    except ValidationError:
+        username = serializer.data['username']
+        email = serializer.data['email']
+    user, created = CustomUser.objects.get_or_create(
+        username=username,
+        email=email,
+    )
     code = generate_code()
-    user.confirmation_code = code
+    user.confirmation_code=code
     user.save()
     send_mail_code(code, user.email)
     return Response(serializer.data, status=status.HTTP_200_OK)
