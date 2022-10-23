@@ -120,7 +120,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CreateReturnListDeleteViewSet(
+class PermissionAccessSearchBackendSearchFieldReplacement(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
@@ -133,12 +133,12 @@ class CreateReturnListDeleteViewSet(
     lookup_field = 'slug'
 
 
-class CategoryViewSet(CreateReturnListDeleteViewSet):
+class CategoryViewSet(PermissionAccessSearchBackendSearchFieldReplacement):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(CreateReturnListDeleteViewSet):
+class GenreViewSet(PermissionAccessSearchBackendSearchFieldReplacement):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 

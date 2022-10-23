@@ -10,8 +10,7 @@ def validate_year(value):
     if value > current_year:
         raise ValidationError(
             ('Год выпуска произведения - {} не может быть больше '
-             'текущего года - {}!'.format(value, current_year)),
-            params={'value': value},
+             'текущего года - {}!'.format(value, current_year))
         )
     return value
 

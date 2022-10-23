@@ -5,7 +5,6 @@ from django.db import models
 
 from reviews.validators import validate_username, validate_year
 
-
 ADMIN = 'admin'
 MODERATOR = 'moderator'
 USER = 'user'
@@ -33,9 +32,9 @@ class NameSlugModel(models.Model):
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
-        (ADMIN, ADMIN),
-        (MODERATOR, MODERATOR),
-        (USER, USER),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+        (USER, 'Пользователь'),
     ]
     username = models.CharField(
         max_length=150,
@@ -65,7 +64,7 @@ class CustomUser(AbstractUser):
         blank=True,
     )
     role = models.CharField(
-        max_length=max(len(role[0]) for role in ROLE_CHOICES),
+        max_length=max(len(role) for role, _ in ROLE_CHOICES),
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Роль пользователя'
@@ -94,7 +93,7 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == ADMIN or self.is_superuser or self.is_staff
+        return self.role == ADMIN or self.is_staff
 
     @property
     def is_moderator(self):
@@ -175,7 +174,7 @@ class TextAuthorPubDateModel(models.Model):
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='%(class)s',
+        related_name='%(class)s' + 's',
         verbose_name='Автор',
     )
     pub_date = models.DateTimeField(

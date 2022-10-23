@@ -27,8 +27,7 @@ class GetTitleSerializer(serializers.ModelSerializer):
         model = Title
         fields = ('id', 'name', 'year', 'rating', 'description', 'genre',
                   'category')
-        read_only_fields = ('id', 'name', 'year', 'rating', 'description',
-                            'genre', 'category')
+        read_only_fields = fields
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -91,13 +90,6 @@ class SignUpSerializer(serializers.Serializer):
     )
     email = serializers.EmailField(max_length=254, required=True)
 
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username',
-            'email',
-        )
-
 
 class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
@@ -106,13 +98,6 @@ class TokenSerializer(serializers.Serializer):
         validators=[validate_username]
     )
     confirmation_code = serializers.CharField(max_length=PIN_RANGE)
-
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username',
-            'confirmation_code',
-        )
 
 
 class UsersSerializer(serializers.ModelSerializer):
