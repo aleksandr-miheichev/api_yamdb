@@ -52,14 +52,9 @@ def send_mail_code(code, email):
 @permission_classes([AllowAny])
 def api_signup(request):
     serializer = SignUpSerializer(data=request.data)
-    try:
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data['username']
-        email = serializer.validated_data['email']
-    except ValidationError as error:
-        logging.warning(f'Ошибка валидации {error}')
-        username = serializer.data['username']
-        email = serializer.data['email']
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
     try:
         user, _ = CustomUser.objects.get_or_create(
             username=username,
@@ -79,19 +74,15 @@ def api_signup(request):
 @permission_classes([AllowAny])
 def api_token(request):
     serializer = TokenSerializer(data=request.data)
-    try:
-        serializer.is_valid(raise_exception=True)
-        username = serializer.validated_data['username']
-        confirmation_code = serializer.validated_data['confirmation_code']
-    except ValidationError as error:
-        logging.warning(f'Ошибка валидации {error}')
-        username = serializer.data['username']
-        confirmation_code = serializer.data['confirmation_code']
+    serializer.is_valid(raise_exception=True)
+    username = serializer.validated_data['username']
+    confirmation_code = serializer.validated_data['confirmation_code']
     user = get_object_or_404(
         CustomUser,
         username=username,
-        confirmation_code=confirmation_code,
     )
+    if user.confirmation_code != confirmation_code:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
     user.confirmation_code = code
     user.save()

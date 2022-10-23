@@ -91,13 +91,29 @@ class SignUpSerializer(serializers.Serializer):
     )
     email = serializers.EmailField(max_length=254, required=True)
 
-class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'email',
+        )
+
+
+class TokenSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
         validators=[validate_username]
     )
     confirmation_code = serializers.CharField(max_length=PIN_RANGE)
+
+    class Meta:
+        model = CustomUser
+        fields = (
+            'username',
+            'confirmation_code',
+        )
+
 
 class UsersSerializer(serializers.ModelSerializer):
     class Meta:
@@ -111,5 +127,6 @@ class UsersSerializer(serializers.ModelSerializer):
             'role',
         )
         lookup_field = 'username'
+
     def validate_username(self, data):
         return validate_username(data)
