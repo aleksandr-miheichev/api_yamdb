@@ -10,7 +10,7 @@ MODERATOR = 'moderator'
 USER = 'user'
 
 
-class CreatedModel(models.Model):
+class AbstractCategoryGenreModel(models.Model):
     """Абстрактная модель для моделей Категория и Жанр."""
 
     name = models.CharField(
@@ -90,24 +90,20 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
-        if self.is_superuser or self.role == ADMIN:
-            return True
-        return False
+        return self.role == ADMIN or self.is_superuser or self.is_staff
 
     @property
     def is_moderator(self):
-        if self.role == MODERATOR:
-            return True
-        return False
+        return self.role == MODERATOR
 
 
-class Category(CreatedModel):
+class Category(AbstractCategoryGenreModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(CreatedModel):
+class Genre(AbstractCategoryGenreModel):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
