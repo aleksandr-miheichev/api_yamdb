@@ -11,7 +11,7 @@ MODERATOR = 'moderator'
 USER = 'user'
 
 
-class AbstractCategoryGenreModel(models.Model):
+class NameSlugModel(models.Model):
     """Абстрактная модель для моделей Категория и Жанр."""
 
     name = models.CharField(
@@ -65,7 +65,7 @@ class CustomUser(AbstractUser):
         blank=True,
     )
     role = models.CharField(
-        max_length=len(MODERATOR),
+        max_length=max(len(role[1]) for role in ROLE_CHOICES),
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Роль пользователя'
@@ -101,13 +101,13 @@ class CustomUser(AbstractUser):
         return self.role == MODERATOR
 
 
-class Category(AbstractCategoryGenreModel):
+class Category(NameSlugModel):
     class Meta:
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
 
-class Genre(AbstractCategoryGenreModel):
+class Genre(NameSlugModel):
     class Meta:
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
@@ -168,14 +168,14 @@ class GenreTitle(models.Model):
         return f'Жанр у произведения "{self.title}": {self.genre}'
 
 
-class CommonInfo(models.Model):
+class TextAuthorPubDateModel(models.Model):
     text = models.TextField(
         verbose_name='Текст',
     )
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='%(app_label)s_%(class)s',
+        related_name='%(class)s',
         verbose_name='Автор',
     )
     pub_date = models.DateTimeField(
@@ -192,7 +192,7 @@ class CommonInfo(models.Model):
         return self.text[:15]
 
 
-class Review(CommonInfo):
+class Review(TextAuthorPubDateModel):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
@@ -205,11 +205,11 @@ class Review(CommonInfo):
             MinValueValidator(1),
             MaxValueValidator(10)
         ),
-        error_messages={'invalid': 'Please rate from 1 to 10'},
+        error_messages={'Ошибка': 'Пожалуйста, поставьте оценку от 1 to 10'},
         verbose_name='Оценка'
     )
 
-    class Meta(CommonInfo.Meta):
+    class Meta(TextAuthorPubDateModel.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'title'],
@@ -220,7 +220,7 @@ class Review(CommonInfo):
         verbose_name_plural = 'Отзывы'
 
 
-class Comment(CommonInfo):
+class Comment(TextAuthorPubDateModel):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
@@ -228,6 +228,6 @@ class Comment(CommonInfo):
         verbose_name='Отзыв'
     )
 
-    class Meta(CommonInfo.Meta):
+    class Meta(TextAuthorPubDateModel.Meta):
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'

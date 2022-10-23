@@ -1,9 +1,9 @@
-from rest_framework import serializers
 from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 
+from api_yamdb.settings import PIN_RANGE
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 from reviews.validators import validate_username
-from api_yamdb.settings import PIN_RANGE
 
 
 class CategorySerializer(serializers.ModelSerializer):

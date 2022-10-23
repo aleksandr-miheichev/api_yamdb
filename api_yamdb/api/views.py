@@ -1,9 +1,9 @@
+from logging import warning
 from random import choice
 from string import digits
-import logging
 
-from django.db import IntegrityError
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -12,7 +12,6 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
@@ -61,7 +60,7 @@ def api_signup(request):
             email=email,
         )
     except IntegrityError as error:
-        logging.warning(f'Ошибка создания юзера {error}')
+        warning(f'Ошибка создания юзера {error}')
         return Response(status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
     user.confirmation_code = generate_code()
