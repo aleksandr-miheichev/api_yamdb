@@ -5,6 +5,7 @@ from django.db import models
 
 from reviews.validators import validate_username, validate_year
 
+
 ADMIN = 'admin'
 MODERATOR = 'moderator'
 USER = 'user'
@@ -32,9 +33,9 @@ class AbstractCategoryGenreModel(models.Model):
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
-        (ADMIN, 'admin'),
-        (MODERATOR, 'moderator'),
-        (USER, 'user'),
+        (ADMIN, ADMIN),
+        (MODERATOR, MODERATOR),
+        (USER, USER),
     ]
     username = models.CharField(
         max_length=150,
@@ -59,9 +60,12 @@ class CustomUser(AbstractUser):
         unique=True,
         validators=[EmailValidator]
     )
-    confirmation_code = models.BigIntegerField(null=True, blank=True,)
+    confirmation_code = models.BigIntegerField(
+        null=True,
+        blank=True,
+    )
     role = models.CharField(
-        max_length=9,
+        max_length=len(MODERATOR),
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Роль пользователя'

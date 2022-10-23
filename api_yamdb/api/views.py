@@ -1,5 +1,8 @@
-from random import randint, seed
+from random import choice
+from string import digits
+import logging
 
+from django.db import IntegrityError
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
@@ -19,13 +22,15 @@ from api.serializers import (CategorySerializer, CommentSerializer,
                              GenreSerializer, GetTitleSerializer,
                              ReviewSerializer, SignUpSerializer,
                              TitleSerializer, TokenSerializer, UsersSerializer)
-from api_yamdb.settings import DEFAULT_FROM_EMAIL
+from api_yamdb.settings import DEFAULT_FROM_EMAIL, PIN_RANGE
 from reviews.models import Category, CustomUser, Genre, Review, Title
 
 
 def generate_code():
-    seed()
-    return str(randint(100000, 999999))
+    code = ''
+    for _ in range(PIN_RANGE):
+        code += choice(digits)
+    return code
 
 
 def get_tokens_for_user(user):
@@ -51,15 +56,20 @@ def api_signup(request):
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data['username']
         email = serializer.validated_data['email']
-    except ValidationError:
+    except ValidationError as error:
+        logging.warning(f'Ошибка валидации {error}')
         username = serializer.data['username']
         email = serializer.data['email']
-    user, created = CustomUser.objects.get_or_create(
-        username=username,
-        email=email,
-    )
+    try:
+        user, _ = CustomUser.objects.get_or_create(
+            username=username,
+            email=email,
+        )
+    except IntegrityError as error:
+        logging.warning(f'Ошибка создания юзера {error}')
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
-    user.confirmation_code = code
+    user.confirmation_code = generate_code()
     user.save()
     send_mail_code(code, user.email)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -69,12 +79,22 @@ def api_signup(request):
 @permission_classes([AllowAny])
 def api_token(request):
     serializer = TokenSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    try:
+        serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data['username']
+        confirmation_code = serializer.validated_data['confirmation_code']
+    except ValidationError as error:
+        logging.warning(f'Ошибка валидации {error}')
+        username = serializer.data['username']
+        confirmation_code = serializer.data['confirmation_code']
     user = get_object_or_404(
         CustomUser,
-        username=serializer.validated_data['username'],
-        confirmation_code=serializer.validated_data['confirmation_code'],
+        username=username,
+        confirmation_code=confirmation_code,
     )
+    code = generate_code()
+    user.confirmation_code = code
+    user.save()
     return Response(
         get_tokens_for_user(user),
         status=status.HTTP_200_OK

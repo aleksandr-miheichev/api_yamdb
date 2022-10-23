@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from django.shortcuts import get_object_or_404
 
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
+from reviews.validators import validate_username
+from api_yamdb.settings import PIN_RANGE
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -82,31 +83,23 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
 
 
-class SignUpSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username',
-            'email',
-        )
-
-
-class TokenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomUser
-        fields = (
-            'username',
-            'confirmation_code',
-        )
-
-
-class UsersSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         max_length=150,
         required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all()), ]
+        validators=[validate_username]
     )
+    email = serializers.EmailField(max_length=254, required=True)
 
+class TokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        max_length=150,
+        required=True,
+        validators=[validate_username]
+    )
+    confirmation_code = serializers.CharField(max_length=PIN_RANGE)
+
+class UsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = (
@@ -118,3 +111,5 @@ class UsersSerializer(serializers.ModelSerializer):
             'role',
         )
         lookup_field = 'username'
+    def validate_username(self, data):
+        return validate_username(data)
