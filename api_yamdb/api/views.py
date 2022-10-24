@@ -26,10 +26,7 @@ from reviews.models import Category, CustomUser, Genre, Review, Title
 
 
 def generate_code():
-    code = ''
-    for _ in range(PIN_RANGE):
-        code += choice(digits)
-    return code
+    return ''.join(choice(digits) for _ in range(PIN_RANGE))
 
 
 def get_tokens_for_user(user):
@@ -59,11 +56,11 @@ def api_signup(request):
             username=username,
             email=email,
         )
-    except IntegrityError as error:
-        warning(f'Ошибка создания юзера {error}')
+    except IntegrityError:
+        warning('Юзер с таким именем или почтой уже существует')
         return Response(status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
-    user.confirmation_code = generate_code()
+    user.confirmation_code = code
     user.save()
     send_mail_code(code, user.email)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -80,15 +77,14 @@ def api_token(request):
         CustomUser,
         username=username,
     )
-    if user.confirmation_code != confirmation_code:
-        return Response(status=status.HTTP_400_BAD_REQUEST)
-    code = generate_code()
-    user.confirmation_code = code
+    if user.confirmation_code == confirmation_code:
+        return Response(
+            get_tokens_for_user(user),
+            status=status.HTTP_200_OK
+        )
+    user.confirmation_code = generate_code()
     user.save()
-    return Response(
-        get_tokens_for_user(user),
-        status=status.HTTP_200_OK
-    )
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 class UsersViewSet(viewsets.ModelViewSet):

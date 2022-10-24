@@ -3,6 +3,7 @@ from django.utils import timezone
 from re import findall
 
 PATTERN = r'^[\w.@+-]+\Z'
+ANTI_PATTERN = r'[^\w.@+-]'
 
 
 def validate_year(value):
@@ -18,6 +19,9 @@ def validate_year(value):
 def validate_username(data):
     if data == 'me':
         raise ValidationError('Имя "me" не использовать!')
-    elif len(findall(PATTERN, data)) == 0:
-        raise ValidationError('В имени недопустимые символы')
+    if len(findall(PATTERN, data)) == 0:
+        result = list(set(findall(ANTI_PATTERN, data)))
+        raise ValidationError(
+            f'В имени недопустимые символы: {"".join(result)}'
+        )
     return data

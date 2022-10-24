@@ -129,3 +129,7 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 DEFAULT_FROM_EMAIL = 'admin@yamdb.com'
 
 PIN_RANGE = 6
+
+MAX_LENGTH = 150
+
+MAX_LENGTH_254 = 254
