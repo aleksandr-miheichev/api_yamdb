@@ -3,9 +3,8 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.validators import EmailValidator
 from django.db import models
 
+from api_yamdb.settings import MAX_LENGTH, MAX_LENGTH_254, PIN_RANGE
 from reviews.validators import validate_username, validate_year
-from api_yamdb.settings import PIN_RANGE, MAX_LENGTH, MAX_LENGTH_254
-
 
 ADMIN = 'admin'
 MODERATOR = 'moderator'
@@ -176,7 +175,7 @@ class TextAuthorPubDateModel(models.Model):
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='%(class)s' + 's',
+        related_name='%(class)ss',
         verbose_name='Автор',
     )
     pub_date = models.DateTimeField(
