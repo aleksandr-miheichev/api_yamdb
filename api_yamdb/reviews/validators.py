@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from re import findall
 
-PATTERN = r'^[\w.@+-]+\Z'
+
 ANTI_PATTERN = r'[^\w.@+-]'
 
 
@@ -19,8 +19,9 @@ def validate_year(value):
 def validate_username(data):
     if data == 'me':
         raise ValidationError('Имя "me" не использовать!')
-    if len(findall(PATTERN, data)) == 0:
-        result = list(set(findall(ANTI_PATTERN, data)))
+
+    result = set(findall(ANTI_PATTERN, data))
+    if len(result) != 0:
         raise ValidationError(
             f'В имени недопустимые символы: {"".join(result)}'
         )

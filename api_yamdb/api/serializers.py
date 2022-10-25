@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from api_yamdb.settings import PIN_RANGE, MAX_LENGTH, MAX_LENGTH_254
+from api_yamdb.settings import PIN_RANGE, MAX_LENGTH
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 from reviews.validators import validate_username
 
@@ -89,7 +89,7 @@ class SignUpSerializer(serializers.Serializer):
         validators=[validate_username]
     )
     email = serializers.EmailField(
-        max_length=MAX_LENGTH_254,
+        max_length=254,
         required=True
     )
 
@@ -100,7 +100,7 @@ class TokenSerializer(serializers.Serializer):
         required=True,
         validators=[validate_username]
     )
-    confirmation_code = serializers.CharField(max_length=PIN_RANGE)
+    confirmation_code = serializers.IntegerField()
 
 
 class UsersSerializer(serializers.ModelSerializer):

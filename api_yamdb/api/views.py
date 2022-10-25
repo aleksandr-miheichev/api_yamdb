@@ -1,6 +1,4 @@
-from logging import warning
-from random import choice
-from string import digits
+from random import sample
 
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -26,7 +24,7 @@ from reviews.models import Category, CustomUser, Genre, Review, Title
 
 
 def generate_code():
-    return ''.join(choice(digits) for _ in range(PIN_RANGE))
+    return sample(range(PIN_RANGE), 1)[0]
 
 
 def get_tokens_for_user(user):
@@ -57,8 +55,8 @@ def api_signup(request):
             email=email,
         )
     except IntegrityError:
-        warning('Юзер с таким именем или почтой уже существует')
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        data = 'Пользователь с таким именем или почтой уже существует'
+        return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
     code = generate_code()
     user.confirmation_code = code
     user.save()
@@ -82,8 +80,10 @@ def api_token(request):
             get_tokens_for_user(user),
             status=status.HTTP_200_OK
         )
-    user.confirmation_code = generate_code()
+    code = generate_code()
+    user.confirmation_code = code
     user.save()
+    send_mail_code(code, user.email)
     return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

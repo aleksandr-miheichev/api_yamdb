@@ -4,7 +4,7 @@ from django.core.validators import EmailValidator
 from django.db import models
 
 from reviews.validators import validate_username, validate_year
-from api_yamdb.settings import PIN_RANGE, MAX_LENGTH, MAX_LENGTH_254
+from api_yamdb.settings import MAX_LENGTH
 
 
 ADMIN = 'admin'
@@ -57,12 +57,11 @@ class CustomUser(AbstractUser):
         verbose_name='Фамилия пользователя'
     )
     email = models.EmailField(
-        max_length=MAX_LENGTH_254,
+        max_length=254,
         unique=True,
         validators=[EmailValidator]
     )
-    confirmation_code = models.CharField(
-        max_length=PIN_RANGE,
+    confirmation_code = models.BigIntegerField(
         null=True,
     )
     role = models.CharField(
