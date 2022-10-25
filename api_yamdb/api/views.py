@@ -1,4 +1,4 @@
-from random import sample
+from random import choice
 
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -24,7 +24,7 @@ from reviews.models import Category, CustomUser, Genre, Review, Title
 
 
 def generate_code():
-    return sample(range(PIN_RANGE), 1)[0]
+    return choice(range(PIN_RANGE))
 
 
 def get_tokens_for_user(user):
@@ -83,9 +83,10 @@ def api_token(request):
     code = generate_code()
     user.confirmation_code = code
     user.save()
-    send_mail_code(code, user.email)
-    return Response({'confirmation_code': 'Неверный код подтверждения'},
-                    status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {'confirmation_code': 'Неверный код подтверждения'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
 
 
 class UsersViewSet(viewsets.ModelViewSet):

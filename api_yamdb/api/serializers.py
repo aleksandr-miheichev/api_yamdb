@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from api_yamdb.settings import MAX_LENGTH
+from api_yamdb.settings import MAX_LENGTH, MAX_LENGTH_EMAIL
 from reviews.models import Category, Comment, CustomUser, Genre, Review, Title
 from reviews.validators import validate_username
 
@@ -89,7 +89,7 @@ class SignUpSerializer(serializers.Serializer):
         validators=[validate_username]
     )
     email = serializers.EmailField(
-        max_length=254,
+        max_length=MAX_LENGTH_EMAIL,
         required=True
     )
 

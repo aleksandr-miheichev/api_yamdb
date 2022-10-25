@@ -21,7 +21,7 @@ def validate_username(data):
         raise ValidationError('Имя "me" не использовать!')
 
     result = set(findall(ANTI_PATTERN, data))
-    if len(result) != 0:
+    if result:
         raise ValidationError(
             f'В имени недопустимые символы: {"".join(result)}'
         )
