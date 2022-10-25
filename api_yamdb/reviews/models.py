@@ -13,7 +13,7 @@ USER = 'user'
 
 
 class NameSlugModel(models.Model):
-    """Абстрактная модель для моделей Категория и Жанр."""
+    """Модель для Категории и Жанра."""
 
     name = models.CharField(
         max_length=256,
@@ -175,7 +175,6 @@ class TextAuthorPubDateModel(models.Model):
     author = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='%(class)s' + 's',
         verbose_name='Автор',
     )
     pub_date = models.DateTimeField(
@@ -186,6 +185,7 @@ class TextAuthorPubDateModel(models.Model):
 
     class Meta:
         abstract = True
+        default_related_name = '%(class)ss'
         ordering = ('-pub_date',)
 
     def __str__(self):
@@ -196,7 +196,6 @@ class Review(TextAuthorPubDateModel):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
         verbose_name='Произведение'
     )
     score = models.IntegerField(
@@ -224,7 +223,6 @@ class Comment(TextAuthorPubDateModel):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name='comments',
         verbose_name='Отзыв'
     )
 
