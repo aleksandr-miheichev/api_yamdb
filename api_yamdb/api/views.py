@@ -116,25 +116,25 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class PermissionAccessSearchBackendSearchFieldReplacement(
+class SlugLookupModelInstanceViewSet(
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
     viewsets.GenericViewSet
 ):
-    """Абстрактный вьюсет для вьюсетов Категория и Жанр."""
+    """Вьюсет для Категории и Жанра."""
     permission_classes = (IsStaffOrReadOnly,)
     filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
 
-class CategoryViewSet(PermissionAccessSearchBackendSearchFieldReplacement):
+class CategoryViewSet(SlugLookupModelInstanceViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
-class GenreViewSet(PermissionAccessSearchBackendSearchFieldReplacement):
+class GenreViewSet(SlugLookupModelInstanceViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
