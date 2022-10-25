@@ -80,6 +80,10 @@ def api_token(request):
             get_tokens_for_user(user),
             status=status.HTTP_200_OK
         )
+    code = generate_code()
+    user.confirmation_code = code
+    user.save()
+    send_mail_code(code, user.email)
     return Response({'confirmation_code': 'Неверный код подтверждения'},
                     status=status.HTTP_400_BAD_REQUEST)
 
