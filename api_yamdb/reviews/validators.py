@@ -1,6 +1,7 @@
+from re import findall
+
 from django.core.exceptions import ValidationError
 from django.utils import timezone
-from re import findall
 
 
 ANTI_PATTERN = r'[^\w.@+-]'
